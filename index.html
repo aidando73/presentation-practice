@@ -166,6 +166,31 @@
     color: #555;
     font-size: 0.8rem;
   }
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .controls {
+      gap: 0.75rem;
+      padding: 0.75rem 0 1rem;
+      margin-bottom: 1rem;
+    }
+    .slider-group { width: 100%; }
+    input[type="range"] { width: 100%; flex: 1; min-width: 0; }
+    .key-hint { display: none; }
+    button { padding: 0.5rem 1rem; font-size: 0.85rem; }
+    .main-layout { flex-direction: column; gap: 1rem; }
+    .questions-col {
+      width: 100%;
+      position: static;
+      max-height: none;
+      overflow: visible;
+    }
+    .questions-panel { padding: 1rem; }
+    .output { padding: 1.25rem; font-size: 0.95rem; line-height: 1.7; }
+    .output h1 { font-size: 1.35rem; }
+    .output h2 { font-size: 1.2rem; }
+    .output h3 { font-size: 1.1rem; }
+    .output h4 { font-size: 1rem; }
+  }
 </style>
 </head>
 <body>
