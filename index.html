@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presentation Practice</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.7;
+    padding: 2rem;
+  }
+  .controls {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #1a1a2e;
+    padding: 1rem 0 1.5rem;
+    border-bottom: 1px solid #2a2a4a;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .controls label {
+    font-size: 0.9rem;
+    color: #888;
+    font-weight: 500;
+  }
+  .slider-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  input[type="range"] {
+    width: 300px;
+    accent-color: #7b68ee;
+    cursor: pointer;
+  }
+  .pct-display {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #7b68ee;
+    min-width: 3.5ch;
+    text-align: right;
+  }
+  textarea {
+    width: 100%;
+    min-height: 200px;
+    background: #12122a;
+    color: #e0e0e0;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.85rem;
+    resize: vertical;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+  textarea:focus { outline: 1px solid #7b68ee; }
+  button {
+    background: #7b68ee;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.15s;
+  }
+  button:hover { background: #6a5acd; }
+  .main-layout {
+    display: flex;
+    gap: 1.5rem;
+  }
+  .output-col {
+    flex: 1;
+    min-width: 0;
+  }
+  .questions-col {
+    width: 360px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 80px;
+    align-self: flex-start;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+  .questions-panel {
+    background: #12122a;
+    border: 1px solid #3a2a5a;
+    border-radius: 8px;
+    padding: 1.25rem;
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+  .questions-panel h3 {
+    color: #7b68ee;
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid #2a2a4a;
+    padding-bottom: 0.5rem;
+  }
+  .questions-panel .q-item {
+    margin-bottom: 0.6rem;
+    color: #ccc;
+    cursor: default;
+  }
+  .questions-panel .q-item:hover {
+    color: #fff;
+  }
+  .questions-panel .q-item::before {
+    content: "Q: ";
+    color: #7b68ee;
+    font-weight: 600;
+  }
+  .output {
+    background: #12122a;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 2rem;
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+  .output h1 { font-size: 1.6rem; margin: 1.2rem 0 0.6rem; color: #fff; }
+  .output h2 { font-size: 1.35rem; margin: 1.1rem 0 0.5rem; color: #fff; }
+  .output h3 { font-size: 1.15rem; margin: 1rem 0 0.4rem; color: #fff; }
+  .output h4 { font-size: 1.05rem; margin: 0.8rem 0 0.3rem; color: #ddd; }
+  .output p { margin: 0.4rem 0; }
+  .output ul, .output ol { margin: 0.4rem 0 0.4rem 1.5rem; }
+  .output li { margin: 0.2rem 0; }
+  .output code {
+    background: #2a2a4a;
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .output strong { color: #fff; }
+  .output table { border-collapse: collapse; margin: 0.8rem 0; width: 100%; }
+  .output th, .output td {
+    border: 1px solid #2a2a4a;
+    padding: 0.4rem 0.75rem;
+    text-align: left;
+    font-size: 0.9rem;
+  }
+  .output th { background: #2a2a4a; color: #fff; }
+  .word { display: inline; }
+  .word.hidden { color: #12122a !important; }
+  .word.hidden * { color: #12122a !important; }
+  .word.hidden code { background: #12122a; color: #12122a !important; }
+  .word.hidden strong { color: #12122a !important; }
+  .word.hidden::selection { background: transparent; }
+  .hint {
+    font-size: 0.8rem;
+    color: #555;
+    margin-top: 0.25rem;
+  }
+  .key-hint {
+    color: #555;
+    font-size: 0.8rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <div class="slider-group">
+    <label>Visible:</label>
+    <input type="range" id="pct" min="0" max="100" value="30">
+    <span class="pct-display" id="pctLabel">30%</span>
+  </div>
+  <button id="toggleInput">Edit Markdown</button>
+  <button id="revealBtn">Reveal All</button>
+  <button id="reshuffleBtn">Reshuffle</button>
+  <span class="key-hint">← → arrow keys to adjust by 5%  |  R to reshuffle</span>
+</div>
+
+<div id="inputArea" style="display:none;">
+  <textarea id="mdInput"></textarea>
+  <button id="renderBtn">Render</button>
+  <p class="hint">Paste your markdown above, then click Render.</p>
+</div>
+
+<div class="main-layout">
+<div class="output-col">
+  <div class="output" id="output"></div>
+</div>
+<div class="questions-col">
+  <div class="questions-panel">
+    <h3>Anticipated Questions</h3>
+    <textarea id="questionsInput" style="
+      width: 100%;
+      min-height: 300px;
+      background: #0d0d1a;
+      color: #ccc;
+      border: 1px solid #2a2a4a;
+      border-radius: 6px;
+      padding: 0.75rem;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      resize: vertical;
+    "></textarea>
+  </div>
+</div>
+</div>
+
+<script>
+const DEFAULT_MD = `# Presentation Practice
+
+A tool for rehearsing talks by hiding most of your script and revealing only a sparse scaffold of words — enough to remind you where you are without letting you read along.
+
+## How to use it
+
+1. Click **Edit Markdown** and paste your talk script (supports headings, lists, **bold**, and \`code\`).
+2. Click **Render**.
+3. Drag the **Visible** slider to control how much of the script shows — start low (10-20%) and increase if you get stuck.
+4. Click **Reshuffle** (or press **R**) to randomize which words are hidden so you can't memorize the pattern.
+5. Use the **Anticipated Questions** panel on the right to prep for Q&A.
+
+## Keyboard shortcuts
+
+- **← / →** — adjust visible percentage by 5%
+- **R** — reshuffle which words are hidden
+- **Reveal All** — temporarily show the full script
+
+## Why it works
+
+Reading your full notes during practice is a trap — you end up reciting instead of speaking. Hiding most of the words forces you to actually generate the sentences from memory, while leaving just enough breadcrumbs to keep you on track.`;
+
+const mdInput = document.getElementById('mdInput');
+const output = document.getElementById('output');
+const pct = document.getElementById('pct');
+const pctLabel = document.getElementById('pctLabel');
+const toggleInput = document.getElementById('toggleInput');
+const inputArea = document.getElementById('inputArea');
+const renderBtn = document.getElementById('renderBtn');
+const revealBtn = document.getElementById('revealBtn');
+
+let revealed = false;
+let seed = Math.floor(Math.random() * 2**32);
+let wordPriorities = [];
+mdInput.value = DEFAULT_MD;
+const reshuffleBtn = document.getElementById('reshuffleBtn');
+
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function parseMd(md) {
+  let html = md
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  const lines = html.split('\n');
+  const result = [];
+  let inList = false;
+  let listDepth = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+
+    line = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    line = line.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    const headingMatch = line.match(/^(#{1,4})\s+(.*)$/);
+    if (headingMatch) {
+      if (inList) { result.push('</ul>'.repeat(listDepth)); inList = false; listDepth = 0; }
+      const level = headingMatch[1].length;
+      result.push(`<h${level}>${headingMatch[2]}</h${level}>`);
+      continue;
+    }
+
+    const listMatch = line.match(/^(\s*)- (.*)$/);
+    if (listMatch) {
+      const depth = Math.floor(listMatch[1].length / 2) + 1;
+      if (!inList) {
+        result.push('<ul>');
+        listDepth = 1;
+        inList = true;
+      }
+      while (listDepth < depth) { result.push('<ul>'); listDepth++; }
+      while (listDepth > depth) { result.push('</ul>'); listDepth--; }
+      result.push(`<li>${listMatch[2]}</li>`);
+      continue;
+    }
+
+    if (line.trim() === '') {
+      if (inList) { result.push('</ul>'.repeat(listDepth)); inList = false; listDepth = 0; }
+      continue;
+    }
+
+    if (inList) {
+      const last = result[result.length - 1];
+      if (last && last.startsWith('<li>')) {
+        result[result.length - 1] = last.replace('</li>', '<br>' + line.trim() + '</li>');
+      } else {
+        result.push(`<p>${line}</p>`);
+      }
+    } else {
+      result.push(`<p>${line}</p>`);
+    }
+  }
+  if (inList) result.push('</ul>'.repeat(listDepth));
+  return result.join('\n');
+}
+
+function wrapWordsInSpans(el) {
+  const textNodes = [];
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+  let node;
+  while (node = walker.nextNode()) textNodes.push(node);
+
+  textNodes.forEach(textNode => {
+    const text = textNode.textContent;
+    if (!text.trim()) return;
+
+    const parts = text.split(/(\s+)/);
+    const frag = document.createDocumentFragment();
+    parts.forEach(part => {
+      if (/^\s+$/.test(part) || part === '') {
+        frag.appendChild(document.createTextNode(part));
+      } else {
+        const span = document.createElement('span');
+        span.className = 'word';
+        span.textContent = part;
+        frag.appendChild(span);
+      }
+    });
+    textNode.parentNode.replaceChild(frag, textNode);
+  });
+}
+
+function assignPriorities() {
+  const words = output.querySelectorAll('.word');
+  const rng = mulberry32(seed);
+  wordPriorities = Array.from(words).map((_, i) => ({ index: i, priority: rng() }));
+  wordPriorities.sort((a, b) => a.priority - b.priority);
+}
+
+function applyVisibility(pctValue) {
+  const words = output.querySelectorAll('.word');
+  if (words.length === 0) return;
+
+  const visibleCount = Math.floor(words.length * (pctValue / 100));
+
+  words.forEach(w => w.classList.add('hidden'));
+
+  for (let i = 0; i < visibleCount && i < wordPriorities.length; i++) {
+    words[wordPriorities[i].index].classList.remove('hidden');
+  }
+}
+
+function render() {
+  output.innerHTML = parseMd(mdInput.value);
+  wrapWordsInSpans(output);
+  assignPriorities();
+  revealed = false;
+  revealBtn.textContent = 'Reveal All';
+  applyVisibility(parseInt(pct.value));
+}
+
+pct.addEventListener('input', () => {
+  revealed = false;
+  revealBtn.textContent = 'Reveal All';
+  pctLabel.textContent = pct.value + '%';
+  applyVisibility(parseInt(pct.value));
+});
+
+toggleInput.addEventListener('click', () => {
+  const showing = inputArea.style.display !== 'none';
+  inputArea.style.display = showing ? 'none' : 'block';
+  toggleInput.textContent = showing ? 'Edit Markdown' : 'Hide Editor';
+});
+
+renderBtn.addEventListener('click', render);
+
+revealBtn.addEventListener('click', () => {
+  revealed = !revealed;
+  if (revealed) {
+    output.querySelectorAll('.word').forEach(w => w.classList.remove('hidden'));
+    revealBtn.textContent = 'Hide Again';
+  } else {
+    applyVisibility(parseInt(pct.value));
+    revealBtn.textContent = 'Reveal All';
+  }
+});
+
+reshuffleBtn.addEventListener('click', () => {
+  seed = Math.floor(Math.random() * 2**32);
+  assignPriorities();
+  revealed = false;
+  revealBtn.textContent = 'Reveal All';
+  applyVisibility(parseInt(pct.value));
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight') {
+    pct.value = Math.min(100, parseInt(pct.value) + 5);
+    pct.dispatchEvent(new Event('input'));
+  } else if (e.key === 'ArrowLeft') {
+    pct.value = Math.max(0, parseInt(pct.value) - 5);
+    pct.dispatchEvent(new Event('input'));
+  } else if (e.key === 'r' || e.key === 'R') {
+    reshuffleBtn.click();
+  }
+});
+
+render();
+</script>
+</body>
+</html>
